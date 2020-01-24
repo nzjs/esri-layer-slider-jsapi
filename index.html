@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Natural Hazards Viewer - Scenario Slider</title>
+
+  <link rel="stylesheet" href="https://js.arcgis.com/4.14/esri/css/main.css">
+  <script src="https://js.arcgis.com/4.14/"></script>
+  <style>
+    html,
+    body,
+    #mapViewDiv {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #infoDiv {
+        background-color: white;
+        padding: 10px;
+        text-align: center;
+        min-width: 260px;
+        width: 300px;
+        max-height: 580px;
+        font-size: 1em;
+        overflow: auto;
+    }
+
+    #mapViewDiv {
+      position: absolute;
+      transition: 3000ms cubic-bezier(0.23, 1, 0.32, 1) 0ms opacity;
+    }
+
+    #sliderDiv {
+      height: 300px;
+      padding: 10px 0;
+    }
+
+    #title {
+      font-weight: bold;
+      padding: 3px;
+    }
+
+    #loading {
+      margin: 0;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-right: -50%;
+      height: 60px;
+      width: 60px;
+      display: none;
+    }
+
+    .esri-search {
+      width: 485px!important;
+      max-width: 70%;
+    }
+
+    .esri-slider__min {
+      padding-top: 20px;
+      padding-bottom: 5px;
+    }
+
+    .esri-slider__max {
+      margin-bottom: 20px;
+    }
+
+    .esri-slider__label {
+      background-color: white;
+      padding: 0 5px;
+      border-radius: 3px;
+      font-size: small;
+    }
+
+    .esri-slider__label:before {
+      content: "Scenario "
+    }
+        
+    .hazardDesc {
+      float: left;
+      text-align: left;
+      padding-bottom: 10px;
+    }
+
+    .dijitDialog {
+      top: 200px!important;
+      width: 600px;
+      height: 500px;
+      overflow: auto;
+      box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 2px;
+      background-color: #fff;
+      opacity: 0.75;
+      border: 1px solid #333;
+      color: #323232;
+      font-size: 12px;
+      font-family: "Avenir Next W00","Helvetica Neue",Helvetica,Arial,sans-serif;
+      line-height: 1.3em;
+      padding: 10px;
+    }
+
+    .dijitDialogTitle {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .dijitDialogPaneContent {
+      padding-top: 15px;
+    }
+
+    .dijitDialogCloseIcon {
+      float: right;
+      padding-right: 5px;
+      font-size: 1.3em;
+    }
+
+  </style>
+  <script>
+    
+    require([
+      "esri/Map", "esri/layers/FeatureLayer", "esri/views/MapView", "esri/Graphic", "esri/widgets/Locate", "esri/widgets/Home", "esri/widgets/Search", 
+      "esri/widgets/Slider", "esri/widgets/BasemapToggle", "esri/Basemap", "esri/widgets/Legend", "esri/widgets/Expand", "esri/core/watchUtils", "dijit/Dialog", "dojo/domReady!"
+    ], function (
+      Map, FeatureLayer, MapView, Graphic, Locate, Home, Search, 
+      Slider, BasemapToggle, Basemap, Legend, Expand, watchUtils, Dialog) {
+
+      const template = {
+        title: "Hazard Category {HazardCategory}",
+        content: [
+          {
+            type: "fields",
+            fieldInfos: [
+              {
+                fieldName: "ScenarioID",
+                label: "Scenario"
+              },
+              {
+                fieldName: "HazardCategory",
+                label: "Hazard Category"
+              },
+              {
+                fieldName: "HazardDesc",
+                label: "Hazard Description"
+              }
+            ]
+          }
+        ]
+      };
+
+      const origLayer = new FeatureLayer({
+        url:  "https://services3.arcgis.com/za4HjpHWqnA4SFnH/arcgis/rest/services/Westport_Flood_Hazards_LRS_NZTM_Merged/FeatureServer/0",
+        definitionExpression: "ScenarioID = 1", // Set the default map scenario
+        popupTemplate: template,
+        title: "Flood Hazard Categories"
+      })
+
+      const map = new Map({
+          basemap: {
+            portalItem: {
+              id: "7baec8e1cf1b439bb6644bd4ba64bf11" // NZ Imagery by Eagle - NZTM
+            }
+          },
+          layers: [origLayer]
+        });
+
+      const view = new MapView({
+        container: "mapViewDiv",
+        map: map,
+        extent: {
+          spatialReference: {
+            latestWkid: 2193,
+            wkid: 2193
+          },
+          xmin: 1482683.74858305, // Default to Westport area
+          ymin: 5374621.38528033,
+          xmax: 1486490.7229703,
+          ymax: 5377499.93117899
+        }
+      });
+
+
+      // Define our widgets for the view
+      const locateWidget = new Locate({
+        view: view,   
+        graphic: new Graphic({
+        symbol: { type: "simple-marker" }  
+        })
+      });
+      const homeWidget = new Home({
+        view: view,   
+        graphic: new Graphic({
+        symbol: { type: "simple-marker" }  
+        })
+      });
+      const searchWidget = new Search({
+        view: view,   
+        graphic: new Graphic({
+        symbol: { type: "simple-marker" }  
+        })
+      });
+      const basemapWidget = new BasemapToggle({
+        view: view,  
+        titleVisible: true,
+        nextBasemap: new Basemap({
+          portalItem: {
+            id: "7dc5e3488b8042538dd4c774aa5ad31e"  // Vector Topo by Eagle - NZTM
+          }
+        })
+      });
+      const legendWidget = new Legend({
+        view: view,
+        container: document.getElementById("infoDiv"),
+      });
+      const legendExpand = new Expand({
+        view: view,
+        content: document.getElementById("infoDiv"),
+        expanded: true,
+        expandIconClass: "esri-icon-notice-round"
+      });
+      const sliderWidget = new Slider({
+        label: "Change scenario",
+        min: 1,
+        max: 15,
+        values: [1],
+        container: document.getElementById("sliderDiv"),
+        rangeLabelsVisible: true,
+        snapOnClickEnabled: true,
+        labelsVisible: true,
+        tickConfigs: [{
+          mode: "position",
+          values: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+        }],
+        precision: 0,
+        layout: "vertical"
+      });
+
+      // Add widgets to the current view
+      view.ui.add(locateWidget, "top-left");
+      view.ui.add(homeWidget, "top-left");
+      view.ui.add(searchWidget, "top-right");
+      view.ui.add(basemapWidget, "bottom-left");
+      view.ui.add(legendExpand, "top-right")
+      view.ui.add(sliderWidget, "top-left")
+
+      // Add/remove map layer based on slider value ... works, but slow ..
+      // sliderWidget.on("thumb-drag", function(event) {
+      //   newLayerID = event.value;
+      //   console.log(newLayerID);
+      //   let newLayer = new FeatureLayer({
+      //     url:  layerBase+newLayerID
+      //   })
+      //   map.layers.remove(origLayer);
+      //   map.layers.add(newLayer);
+      // })
+
+      // Filter the layer based on slider value ... better performance, 
+      // requires layers to be dissolved by an attribute, eg. ScenarioID
+      sliderWidget.on("thumb-drag", function(event) {
+        console.log(event.value);
+        let qry = "ScenarioID = " + event.value;
+        origLayer.definitionExpression = qry;
+
+        document.getElementById("loading").style = "display: block"
+        setTimeout(function(){ 
+          document.getElementById("loading").style = "display: none"; 
+        }, 7000);
+        
+      });
+      
+      // Display the loading indicator when the view is updating
+      // let refreshIndicator = document.getElementById("loading");
+      // watchUtils.whenTrue(view, "updating", function(evt) {
+      //   //refreshIndicator.show();
+      //   refreshIndicator.style = "display: initial";
+      // });
+      // // Hide the loading indicator when the view stops updating
+      // watchUtils.whenFalse(view, "updating", function(evt) {
+      //   // refreshIndicator.hide();
+      //   refreshIndicator.style = "display: none";
+      // });
+      
+
+      splashContent = "Welcome to the official website for the West Coast Civil Defence & Emergency Management (CDEM) Group Tsunami Evacuation Zones geospatial viewer. West Coast CDEM Group does not warrant its accuracy and disclaims all liability whatsoever for any error, inaccuracy or incompleteness of the information. No person should rely on any information within this viewer without seeking independent and professional advice.<br/><br/>"+
+      "The following terms along with the disclaimer and privacy policy serve as the agreement governing the visitors use of this website that may also be referred to as ‘the site’. The parties to this agreement include and are limited to the West Coast Civil Defence & Emergency Management Group which we may refer to as “we” or “us” or “our” and the visitor to the site, who we may refer to as ‘you’.<br/><br/>"+
+      "<strong>Website Contents & Terms of Use Information</strong><br/><br/>"+
+      "We hope that this website provides you with the information that you require on the West Coast Tsunami Evacuation Zones and the Tsunami Evacuation information and messaging.<br/><br/>"+
+      "This West Coast Tsunami Evacuation Zones geospatial viewer has been prepared by the West Coast Civil Defence & Emergency Management (CDEM) Group. This has been provided to the West Coast CDEM Coordinating Executive Group (CEG) as well as all other partner organisations and agencies for use in tsunami response and recovery planning, as well as the community for a better understanding of the tsunami evacuation zones and to be used in personal evacuation planning.<br/><br/>"+
+      "The West Coast Tsunami Evacuation Zones are to be used only in tsunami response and recovery planning and in defining areas where people should be evacuated from and areas where people can evacuate to. It is important to recognise that the evacuation zones are not tsunami hazard zones, tsunami risk zones, or tsunami inundation zones. They are areas that we recommend people evacuate from as a precaution after natural warnings, or in an official tsunami warning.<br/><br/>"+
+      "The West Coast CDEM Group are in the process of upgrading these evacuation zones as there are many uncertainties involved including knowledge of potential tsunami sources, source characteristics, bathymetry and topography, tsunami propagation and inundation characteristics. For these reasons the data provided cannot be relied on for any reason other response and recovery planning.<br/><br/>"+
+      "All viewers of these zones need to be aware that the New Zealand Coastal Policy Statement (Department of Conservation 2010) sets out national policy under the Resource Management Act 1991 (RMA) for managing areas potentially affected by coastal hazards, which includes the potential effects of tsunami, and how to avoid or mitigate them. However other than evacuation planning, the current West Coast Evacuation Zones supplied by the West Coast CDEM Group cannot be used for any other purpose such as requirements for subdivision, development, land-use and tsunami risk assessment.<br/><br/>"+
+      "Additional to the inaccuracy and uncertainty of the provided zones, there is a lot of uncertainty around how tsunamis will behave, particularly large tsunamis, as we have not experienced many of these in our short-written history. Every tsunami is different depending on its source, the direction it is arriving from, and the sea state and tide at the time. There is no one tsunami that would inundate an entire zone. Rather, the zones represent an ‘envelope’ around many different possible tsunami scenarios. Inevitably this will lead to some degree of over-evacuation in any tsunami event. <br/><br/>"+
+      "Should you have questions please contact the West Coast CDEM Group at info@westcoastemergency.govt.nz .<br/><br/>"+
+      "Last updated: 18th November 2019";
+
+      const splash = new Dialog({
+        title: "Introduction & Disclaimer",
+        content: splashContent,
+        style: "width: 600px"
+      })
+      //window.onload = splash.show();
+
+    });
+
+  </script>
+</head>
+
+<body>
+  <div id="mapViewDiv"></div>
+  <img id='loading' src="https://i.stack.imgur.com/qq8AE.gif"/>
+  <div id="infoDiv" class="esri-widget">
+    <div id="title">Flooding Hazard Scenarios</div>
+    <div id="description">
+      This app allows you to explore fifteen different flooding hazard scenarios in the Westport area. 
+      The slider widget on the left side of the screen allows you to control which scenario is displayed.<br/><br/>
+      <div id="title">Description of Hazard Categories</div>
+      <span class="hazardDesc">
+      <strong>H1</strong> - Generally safe for vehicles, people and buildings.<br/>
+      <strong>H2</strong> - Unsafe for small vehicles. <br/>
+      <strong>H3</strong> - Unsafe for vehicles, children and the elderly.<br/>
+      <strong>H4</strong> - Unsafe for vehicles and people. <br/>
+      <strong>H5</strong> - Unsafe for vehicles and people. All buildings vulnerable to structural damage. Some less robust buildings subject to failure.<br/>
+      <strong>H6</strong> - Unsafe for vehicles and people. All building types considered vulnerable to failure.
+      </span>
+    </div>
+  </div>
+  <div id="sliderContainer">
+    <div id="sliderDiv"></div>
+  </div>
+</body>
+
+</html>
