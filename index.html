@@ -35,8 +35,10 @@
     }
 
     #sliderDiv {
-      height: 300px;
-      padding: 10px 0;
+      height: 410px;
+      min-width: 64px;
+      width: 64px;
+      padding: 10px;
     }
 
     #title {
@@ -58,6 +60,7 @@
     .esri-search {
       width: 485px!important;
       max-width: 70%;
+      z-index: 15;
     }
 
     .esri-slider__min {
@@ -121,10 +124,10 @@
   <script>
     
     require([
-      "esri/Map", "esri/layers/FeatureLayer", "esri/views/MapView", "esri/Graphic", "esri/widgets/Locate", "esri/widgets/Home", "esri/widgets/Search", 
+      "esri/Map", "esri/layers/FeatureLayer", "esri/views/MapView", "esri/Graphic", "esri/widgets/Locate", "esri/widgets/Home", "esri/widgets/LayerList", "esri/widgets/Search", 
       "esri/widgets/Slider", "esri/widgets/BasemapToggle", "esri/Basemap", "esri/widgets/Legend", "esri/widgets/Expand", "esri/core/watchUtils", "dijit/Dialog", "dojo/domReady!"
     ], function (
-      Map, FeatureLayer, MapView, Graphic, Locate, Home, Search, 
+      Map, FeatureLayer, MapView, Graphic, Locate, Home, LayerList, Search, 
       Slider, BasemapToggle, Basemap, Legend, Expand, watchUtils, Dialog) {
 
       const template = {
@@ -195,6 +198,18 @@
         symbol: { type: "simple-marker" }  
         })
       });
+      const lyrWidget = new LayerList({
+        view: view,   
+        graphic: new Graphic({
+        symbol: { type: "simple-marker" }  
+        })
+      });
+      const lyrExpand = new Expand({
+        view: view,
+        content: lyrWidget,
+        expanded: false,
+        expandIconClass: "esri-icon-layer-list"
+      });
       const searchWidget = new Search({
         view: view,   
         graphic: new Graphic({
@@ -240,10 +255,11 @@
       // Add widgets to the current view
       view.ui.add(locateWidget, "top-left");
       view.ui.add(homeWidget, "top-left");
+      view.ui.add(lyrExpand, "top-left");
       view.ui.add(searchWidget, "top-right");
-      view.ui.add(basemapWidget, "bottom-left");
+      view.ui.add(sliderWidget, "bottom-left")
+      view.ui.add(basemapWidget, "bottom-right");
       view.ui.add(legendExpand, "top-right")
-      view.ui.add(sliderWidget, "top-left")
 
       // Add/remove map layer based on slider value ... works, but slow ..
       // sliderWidget.on("thumb-drag", function(event) {
