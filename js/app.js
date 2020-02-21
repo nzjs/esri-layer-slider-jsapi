@@ -36,15 +36,15 @@ require([
         4: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__04_Q100_No_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
         5: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__05_Q100_Medium_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
         6: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__06_Q100_Severe_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
-        7: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__07_Q50cc_700SLR_No_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
-        8: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__08_Q50cc_700SLR_Medium_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
-        9: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__09_Q50cc_700SLR_Severe_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
-        10: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__10_Q100CC_700SLR_No_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
-        11: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__11_Q100CC_700SLR_Medium_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
-        12: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__12_Q100CC_700SLR_Severe_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
-        13: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__13_Q100CC_1mSLR_No_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
-        14: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__14_Q100CC_1mSLR_Medium_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
-        15: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__15_Q100CC_1mSLR_Severe_Blockage_2017_Hazard_D_NZTM/VectorTileServer'
+        // 7: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__07_Q50cc_700SLR_No_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
+        // 8: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__08_Q50cc_700SLR_Medium_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
+        // 9: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__09_Q50cc_700SLR_Severe_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
+        // 10: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__10_Q100CC_700SLR_No_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
+        // 11: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__11_Q100CC_700SLR_Medium_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
+        // 12: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__12_Q100CC_700SLR_Severe_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
+        // 13: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__13_Q100CC_1mSLR_No_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
+        // 14: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__14_Q100CC_1mSLR_Medium_Blockage_2017_Hazard_D_NZTM/VectorTileServer',
+        // 15: 'https://tiles.arcgis.com/tiles/za4HjpHWqnA4SFnH/arcgis/rest/services/FC_Int__15_Q100CC_1mSLR_Severe_Blockage_2017_Hazard_D_NZTM/VectorTileServer'
     }
     // console.log(vectorTileLayers[2])
 
@@ -143,15 +143,18 @@ require([
     const sliderWidget = new Slider({
         label: "Change scenario",
         min: 1,
-        max: 15,
+        // max: 15,
+        max: 6,
         values: [1],
         container: document.getElementById("sliderDiv"),
         rangeLabelsVisible: true,
         snapOnClickEnabled: true,
         labelsVisible: true,
         tickConfigs: [{
-        mode: "position",
-        values: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+            mode: "position",
+            // values: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+            values: [1,2,3,4,5,6],
+            labelsVisible: true
         }],
         precision: 0,
         layout: "vertical"
